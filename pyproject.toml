@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pc_zap_scrapper"
+requires-python = ">3.10.8"
+description = "Um template para começar o desenvolvimento de apps"
+readme = "README.md"
+authors = [
+    { name = "Eduardo", email = "emdemor415@gmail.com.br" }
+]
+license = { file = "LICENSE" }
+classifiers = [
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Utilities",
+]
+keywords = ["template", "app"]
+dynamic = ["dependencies", "version"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pc_zap_scrapper.__version__"}
+dependencies = {file = ["requirements.txt"]}
+
+[project.scripts]
+pczapscrap = "pc_zap_scrapper.__main__:main"

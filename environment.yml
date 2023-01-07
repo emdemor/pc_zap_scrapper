@@ -1,0 +1,9 @@
+name: pc_zap_scrapper # Change app_name 
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10.8
+  - pip=22.3.1
+  - pip:
+      - -r requirements.txt
