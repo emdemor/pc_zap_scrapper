@@ -1,148 +1,107 @@
-# Template para Aplicações em Python
-Esse repositório é um compilado de tudo que costumo usar quando vou construir um app em Python. É um projeto bastante pessoal e basicamente tem as seguintes características
+# Zap Scrapper - Imoveis em Poços de Caldas
 
-- No final, a aplicação deve ser instalável com o PyPI
-- Automatização dos uploads no servidor remoto do PyPI
-- Automatização da geração da documentação com Sphinx
+Scrapper para obter dados de imóveis na cidade de Poços de Caldas, MG. O aplicativo roda o scrapper, formata os dados e faz o load numa base de dados privada do PostgreSQL.
 
-### To-Do List
-Alguns pontos que precisam de melhorias e algumas ideias a serem implementadas
-1. Automatizar o upload da documentação para algum servidor estático remoto (como AWS S3, por exemplo) 
-2. Implementar um instalador desse template, tal como o instalador do coockiecutter. (Como é de difícil manutenção, esperar por algum colaborador) 
+---
 
-
-## Modificações
-
-1. Altere o nome da pasta `emdemor_app_template` para o nome do seu App e desenvolva seu código ali. Vou citar como exemplo um app fictício `emmapp`.
-
-2. No arquivo `environment.yml` altere o nome do ambiente conda para o que seja de maior conveniência. Por exemplo, pode-se usar `emmapp`.
-
-3. Configure o arquivo `LICENSE` de acordo com a licensa que escolher.
-
-4. No arquivo Makefile, substitua `emdemor_app_template` nas linhas 19 e 24 (dentro das regras clear e uninstall) para o nome de seu app (no nosso caso, `emmapp`)
-
-5. No arquivo `pyproject.toml`, Substitua `emdemor_app_template` pelo nome de seu app nas linhas 6 (campo "name" dentro de [project]), 28 (campo "version" dentro de [tool.setuptools.dynamic]) e 32 (campo onde você define o comando para rodar o app. Escolha o comando que deseja usar.)
-
-6. No arquivo `docs/source/conf.py`, substitua o app name nas linhas 9 (dentro do `sys.path.insert`) e 14 (nome do projeto). Aproveite para configurar as informações de autor e data.
-
-7. Escreva a introdução da sua documentação no arquivo `docs/source/intro.rst`
-
-8. Para cada modulo na pasta `emmapp` (no seu caso, será o nome de seu app), crie uma arquivo tipo RST dentro de `_files/_modules` com o nome do modulo. Por exemplo, para o módulo `emmapp.utils`, deve-se criar o arquivo `_files/_modules/utils.rst`. Dentro, deverá ter o seguinte código
+## 1. Instalação
+A instalação é dada através do `pip`:
+```bash
+$ pip install pc_zap_scrapper 
 ```
-{{nome do modulo}}
-===================
+---
 
-.. automodule:: {{nome do modulo}}
-   :members:
-```
+## 2. Configurando a conexão com o banco
+Na etapa de load do banco de dados, é necessário fornecer as credenciais do banco de dados. Serão necessárias as informações:
+* `DB_USERNAME`
+* `DB_PASSWORD`
+* `DB_NAME`
+* `DB_HOST`
+* `DB_PORT`
 
-9. Para cada submodulo na pasta `emmapp` (no seu caso, será o nome de seu app), crie uma pasta dentro de `_files/_modules` com o nome do modulo e um arquivo tipo RST dentro dessa pasta para cada submodulo. Por exemplo, para do módulo `emmapp/mymodule/hello`, deve-se criar a pasta `_files/_modules/mymodule`, e dentro, o arquivo `_files/_modules/mymodule/hello.rst`. Nesse arquivo, deverá ter o seguinte código
-```
-{{nome do submodulo}}
-===================
+Esses dados podem ser passados manualmente ou através de arquivo `.env`
 
-.. automodule:: {{nome do modulo}}.{{nome do submodulo}}
-   :members:
-```
-
-10. Dentro de `_files/_usage`, edite o arquivo `getting_started.rst` e quaisquer outros arquivos que adicionar. Lembre-se que para cada arquivo novo em `docs/source/_files/_usage`, deve-se também referenciá-lo em  `docs/source/usage.rst`
-
-## Detalhes sobre a documentação
-
-1. Instale sphinx
+### 2.a Configuração manual das credenciais
+Basta rodar:
 
 ```bash
-pip install sphinx
+$ zapscrap configure -p path/to/.env
 ```
+e fornecer cada uma das informações requeridas.
 
-2. Crie e entre na pasta docs e rode sphinx-quickstart
+### 2.b Configuração através do arquivo `.env`
+alternativamente, pode-se definir o `.env` com as informações necessárias.
+```bash
+# Arquivo .env para conexão com banco de dados PostgreSQL
+DB_USERNAME=nome_do_usuario
+DB_PASSWORD=admin123
+DB_NAME=nome_da_base
+DB_HOST=esse_e_meu.host
+DB_PORT=0000
+```
+Salve esse arquivo em qualquer lugar; por exemplo, em `path/to/.env`. Depois, rode o comando
 
 ```bash
-mkdir docs
-cd docs
-sphinx-quickstart
+$ zapscrap configure -p path/to/.env
 ```
+---
 
-3. Preencha as informações
+## 3. Utilização
+
+O scrapping, seguido da sanitização dos dados e carregamento no banco de dados é feito simplesmente com o comando:
 
 ```bash
-> Separar os diretórios de origem e compilação (y/n) [n]: y
-> Nome do projeto: Template de Python
-> Nome(s) de autor(es): A. U. Thor
-> Lançamento do projeto []: 2022-12-31
-> Idioma do projeto [en]: en
+# Exemplo do uso do comando 'zapscrap'
+$ zapscrap
 ```
 
-Após isso, teremos duas pastas dentro de docs. A pasta source vai ser onde vamos trabalhar para gerar documentação. A pasta build será onde a documentação estará.
+Após sua chamada, você deverá ver um barra de progresso indicado a evolução do processo de raspagem de dados.
 
-4. Editar o endereço do seus modulos (no template, é a pasta src) em relação ao arquivo `docs/source/conf.py`. No nosso caso, será:
+É também possível executar individualmente cada etapa dessa ETL. Isso está documentado nas seções posteriores
 
-```python
-import os
-import sys
+### 3.1 Webscrapping para extração de dados
 
-sys.path.insert(0, os.path.abspath("../../src"))
+Para executar o Scrapping, basta utilizar o comando `zapscrap search`. Esse comando tem quatro argumentos básicos:
+
+* `action` (`-a` ou `--action`): Define se você está procurando por imóveis a venda ou para aluguel. Por padrão, está configurado como "venda".
+```bash
+# Exemplo do uso do argumento 'action'
+$ zapscrap search -a venda
 ```
 
-5. Adicione extensões. No arquivo `docs/source/conf.py`, onde está
-
-```python
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
-extensions = []
+* `estate_type` (`-t` ou `--estate_type`): Define se você vai procurar por casas, apartamentos ou ambos. Por padrão, esta configurado com o  valor "imoveis", que representa casas e apartamentos.
+```bash
+# Exemplo do uso do argumento 'estate_type'
+$ zapscrap search -t imoveis
 ```
 
-Substitua por:
-
-```python
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
-extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.napoleon",
-]
+* `estate_type` (`-l` ou `--location`): Define o local onde procurar. O formato deve ser uf+nome-da-cidade. Por exemplo, para São Paulo capital de ve ficar como sp+sao-paulo.
+```bash
+# Exemplo do uso do argumento 'location'
+$ zapscrap search -l mg+pocos-de-caldas
 ```
 
-6. Altere o thema html do arquivo
-
-```python
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-html_theme = "sphinx_rtd_theme"
+* `max_pages` (`-m` ou `--max_pages`): Define o alcance da paginação. Por exemplo, se for escolhido p valor 3 para esse parâmetro, apenas as três primeiras páginas serão retornadas. Por padrão, é atribuido a ele o valor `None` que indica ao scrapper para trazer todas as páginas.
+```bash
+# Exemplo do uso do argumento 'max_pages'
+$ zapscrap search -m 2
 ```
 
-7. Adicione logo, favicon e estilos css à sua página. Para isso, adicione todos os arquivos dentro de `docs/source/_static`. Dentro do arquivo `docs/source/conf.py`, adicione as seguintes linhas:
+Após o scrapping, o programa irá manter os dados na memórias da forma como foram consultados
 
-```python
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+### 3.2 Formatação dos dados
 
-html_logo = "_static/logo.png"
-
-html_css_files = ["custom-theme.css"]
-
-html_favicon = "_static/favicon.ico"
-
-html_theme_options = {
-    "logo_only": True,
-    "display_version": False,
-}
-
-```
-
-8. Dentro da pasta docs, rode:
+Em seguida, deve-se formatar os dados para o esquema necessário na ingestão. 
 
 ```bash
-make html
+# Exemplo do uso do comando 'format-data'
+$ zapscrap format-data
 ```
 
-A documentação estará em `docs/build/html`
+### 3.3 Ingestão no banco
+
+Por último, já com a base sanitizado, deve-se executar a ingestão de fato:
+```bash
+# Exemplo do uso do comando 'db-ingest'
+$ zapscrap db-ingest
+```

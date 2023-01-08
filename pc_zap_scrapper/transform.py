@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 import numpy as np
 import pandasql
+from loguru import logger
 
 from pc_zap_scrapper import PATH_DATA_INTERIM, PATH_DATA_RAW
 from pc_zap_scrapper.maps import get_lat_long
@@ -141,7 +142,7 @@ def __check_value_out_of_range(column, range_):
     if not column.between(*range_).all():
         logging.warning(
             f"Some values of {name} are out of range {range_}."
-            + f" We are clipping this values."
+            + " We are clipping this values."
         )
 
 
@@ -155,8 +156,11 @@ def format_table_psql(df: pd.DataFrame):
     for col in NUMERICAL_COLUMNS:
         try:
             df[col] = df[col].replace("", "NaN").replace("None", np.nan).astype(float)
-        except:
-            print(col)
+        except Exception as err:
+            logger.error(
+                f"It was not possible to convert column {col} to float."
+                + str(err)
+            )
 
     # Convertendo colunas de datas
     df["search_date"] = df["search_date"].astype(str)

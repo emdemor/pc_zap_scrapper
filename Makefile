@@ -1,10 +1,28 @@
 build:
+	bumpversion build
 	pip install build
 	pip install twine
 	python -m build
-	python -m twine upload dist/*
 	$(MAKE) doc
 	$(MAKE) clear
+
+release:
+	bumpversion release --tag
+	pip install build
+	python -m build
+	$(MAKE) pypi
+	$(MAKE) doc
+	$(MAKE) clear
+
+pypi:
+	pip install twine
+	python -m twine upload dist/*
+
+release-up:
+	bumpversion release
+
+patch:
+	bumpversion patch
 
 test-build:
 	pip install -e .

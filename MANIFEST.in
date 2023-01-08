@@ -1,1 +1,4 @@
 include LICENSE
+include datasets/external/neighbor_latlong.parquet
+include datasets/external/*
+recursive-include datasets/external *

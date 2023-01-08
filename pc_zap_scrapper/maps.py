@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 import pandas as pd
+from loguru import logger
 from geopy.geocoders import Nominatim
 from tqdm import tqdm
 
@@ -30,7 +31,7 @@ def get_estate_coord(state, city, neighbor, street, n_tries=10):
             return result.point[:2]
 
         except AssertionError as err:
-            pass
+            logger.error(err)
 
         # Trying neighbor
         try:
@@ -40,7 +41,7 @@ def get_estate_coord(state, city, neighbor, street, n_tries=10):
             return result.point[:2]
 
         except AssertionError as err:
-            pass
+            logger.error(err)
 
         # Trying street
         try:
@@ -50,7 +51,7 @@ def get_estate_coord(state, city, neighbor, street, n_tries=10):
             return result.point[:2]
 
         except AssertionError as err:
-            pass
+            logger.error(err)
 
         finally:
             return (np.nan, np.nan)
