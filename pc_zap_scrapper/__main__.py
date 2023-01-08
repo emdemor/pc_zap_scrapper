@@ -1,9 +1,10 @@
+import sys
 import click
 from loguru import logger
 from dotenv import load_dotenv
 from click_default_group import DefaultGroup
 
-from pc_zap_scrapper import ACTION, LOCALIZATION, TYPE, PATH_TEMP_DOTENV
+from pc_zap_scrapper import ACTION, LOCALIZATION, TYPE, PATH_TEMP_DOTENV, __version__
 from pc_zap_scrapper.load import load
 from pc_zap_scrapper.scrap import search_estates
 from pc_zap_scrapper.transform import format_data
@@ -87,6 +88,10 @@ def config(dotenv_path):
     print("--> Config")
     configure(dotenv_path)
 
+@cli.command(name="--version")
+def version():
+    sys.stdout.write(__version__)
+    sys.stdout.write("\n")
 
 @cli.command()
 @click.option(
