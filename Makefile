@@ -4,7 +4,6 @@ build:
 	pip install twine
 	python -m build
 	$(MAKE) doc
-	$(MAKE) clear
 
 release:
 	bumpversion release --tag
