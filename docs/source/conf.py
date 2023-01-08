@@ -15,7 +15,7 @@ project = 'Poços de Caldas - Scrapper de Imóveis' # Change app_name
 copyright = '2023, Eduardo Morais'
 author = 'Eduardo Morais'
 release = '2023'
-version = '1.0.0.rc0'
+version = '1.0.0.rc1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
