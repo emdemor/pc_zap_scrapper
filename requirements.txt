@@ -6,7 +6,7 @@ sphinx-rtd-theme==0.5.1
 toml==0.10.2
 fastparquet==0.8.1
 geopy==2.2.0
-pandas==1.2.4
+pandas
 pandasql==0.7.3
 pyarrow
 psycopg2-binary==2.9.5

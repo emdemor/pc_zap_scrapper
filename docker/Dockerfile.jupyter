@@ -1,0 +1,43 @@
+FROM jupyter/minimal-notebook
+
+WORKDIR /app
+
+# Adicionar dependências de sistema necessárias para compilação
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    libc-dev \
+    libssl-dev \
+    libffi-dev \
+    libbz2-dev \
+    liblzma-dev \
+    libz-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENV PIP_DISABLE_PIP_VERSION_CHECK=on
+
+# Instaling playwright
+USER jovyan
+
+COPY ./requirements.txt ./
+RUN pip install -r requirements.txt
+
+
+COPY ./pc_zap_scrapper ./pc_zap_scrapper
+COPY ./notebooks ./notebooks
+COPY ./README.md ./
+COPY ./LICENSE ./
+COPY ./pyproject.toml ./
+
+USER root
+RUN chown -R jovyan:users /app
+USER jovyan
+
+RUN pip install . --no-deps
+
+EXPOSE 8888
+
+VOLUME /app
+
+CMD ["start-notebook.sh", "--NotebookApp.token=''", "--NotebookApp.password=''", "--NotebookApp.default_url='/lab/tree'", "--notebook-dir=/app/notebooks"]
