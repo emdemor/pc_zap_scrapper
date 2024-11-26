@@ -21,3 +21,4 @@ selenium
 seleniumbase
 random-user-agent
 webdriver-manager
+pydantic_settings

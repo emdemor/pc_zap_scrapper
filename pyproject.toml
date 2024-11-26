@@ -45,7 +45,7 @@ dependencies = [
 pc_zap_scrapper = ["datasets/external/*"]
 
 [tool.setuptools]
-packages = ["pc_zap_scrapper"]
+packages = ["pc_zap_scrapper", "pc_zap_scrapper.v2"]
 include-package-data = true
 
 # [tool.setuptools.packages.find]

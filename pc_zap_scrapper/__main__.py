@@ -88,10 +88,12 @@ def config(dotenv_path):
     print("--> Config")
     configure(dotenv_path)
 
+
 @cli.command(name="--version")
 def version():
     sys.stdout.write(__version__)
     sys.stdout.write("\n")
+
 
 @cli.command()
 @click.option(
