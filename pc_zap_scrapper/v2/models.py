@@ -1,11 +1,13 @@
 from datetime import datetime
-from pydantic import BaseModel
+import uuid
+from pydantic import BaseModel, Field
 
 from pc_zap_scrapper.v2.config import config, REAL_ESTATE_TYPES, ACTION_TYPES
 
 
 class RealEstateInfo(BaseModel):
-    id: str | None
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    estate_id: str | None
     action: str
     search_date: datetime
     post_type: str | None = None

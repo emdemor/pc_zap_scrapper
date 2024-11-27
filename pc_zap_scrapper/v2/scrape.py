@@ -1,12 +1,18 @@
 import re
 import asyncio
 import random
+import uuid
 from importlib import resources
-from datetime import datetime
+from datetime import datetime, time
 from typing import get_args
 from tqdm.asyncio import tqdm_asyncio
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 
+
+import backoff
 import pandas as pd
+from loguru import logger
 from bs4 import BeautifulSoup
 from unidecode import unidecode
 from random_user_agent.user_agent import UserAgent
@@ -14,7 +20,7 @@ from playwright.async_api import async_playwright
 
 from pc_zap_scrapper.v2.models import RealEstateInfo, ZapImoveisURL
 from pc_zap_scrapper.v2.config import config, REAL_ESTATE_TYPES, ACTION_TYPES
-from pc_zap_scrapper.v2.utils import suppress_errors_and_log
+from pc_zap_scrapper.v2.utils import get_integer_fields, suppress_errors_and_log
 
 
 async def get_estates_from_page(
@@ -43,7 +49,16 @@ async def get_estates_from_page(
 
     search_date = datetime.now()
     estate_info = [get_info_from_div(div, action, search_date).model_dump() for div in divs]
-    return pd.DataFrame(estate_info)
+    estates = pd.DataFrame(estate_info)
+
+    integer_columns = get_integer_fields(RealEstateInfo)
+
+    for col in integer_columns:
+        estates[col] = estates[col].astype("Int64")
+
+    estates = estates.where(pd.notnull(estates), None)
+
+    return estates
 
 
 def get_info_from_div(div, action: ACTION_TYPES, search_date: str | None = None):
@@ -70,7 +85,7 @@ def get_info_from_div(div, action: ACTION_TYPES, search_date: str | None = None)
     longitude = latlong.get("longitude", None)
 
     return RealEstateInfo(
-        id=_get_id(div),
+        estate_id=_get_id(div),
         action=action,
         search_date=search_date,
         post_type=_get_post_type(div),
@@ -157,6 +172,7 @@ def _get_post_type(div):
 def _get_id(div):
     if link := div.find("a"):
         return link.get("data-id", None)
+    return str(uuid.uuid4())[:10]
 
 
 @suppress_errors_and_log
@@ -347,3 +363,44 @@ async def _scroll_and_get_divs(page):
     await _scroll_position(page)
     soup = await _fetch_page_content(page)
     return soup.find_all("div", attrs={"data-position": True})
+
+
+def backoff_hdlr(details):
+    time.sleep(3)
+    logger.warning(
+        "Backing off {wait:0.1f} seconds after {tries} tries "
+        "calling function {target} with args {args} and kwargs "
+        "{kwargs}".format(**details)
+    )
+
+
+@backoff.on_exception(
+    backoff.expo,
+    HTTPError,
+    max_tries=3,
+    logger=logger,
+    on_backoff=backoff_hdlr,
+)
+def get_html_page(url):
+
+    logger.debug(f"Requesting info from '{url}'")
+
+    request = Request(url)
+    user_agent = UserAgent().get_random_user_agent()
+    request.add_header("User-Agent", user_agent)
+    try:
+        html_page = urlopen(request, timeout=20)
+    except HTTPError as e:
+        logger.error("[error]", e)
+        raise e
+
+    return BeautifulSoup(html_page, "html.parser")
+
+
+def get_number_of_real_estates(soup_object: BeautifulSoup):
+    title_element = soup_object.find("div", {"class": "result-wrapper__title"})
+    return int(re.sub("[^0-9]", "", title_element.text))
+
+
+def get_number_of_pages(number_of_real_estates: int):
+    return number_of_real_estates // 100 if number_of_real_estates // 100 > 1 else 1
