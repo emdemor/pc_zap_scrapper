@@ -23,19 +23,25 @@ ZAPSCRAP_LOCALIZATION=mg+lavras
 ZAPSCRAP_MAX_PAGES=15
 ```
 
-Você pode exportar uma a uma ou então as coloque em um arquivo `.env` e então rode:
+Uma forma mais simples talvez seja criar um arquivo `.env` tal como mostrado acima e rodar:
+
+```bash
+docker run --rm -it --env-file .env emdemor/zapscrap:latest
+```
+
+Alternativamente, você pode exportar uma a uma ou então utilizar o arquivo `.env` para exportar as variáveis:
 
 ```bash
 export $(grep -v '^#' .env | xargs)
 ```
 
-2. Rode
+Nesse caso, você deverá declarar todas as variáveis de ambiente durante a execução:
 
 ```bash
-docker run \
+docker run --rm -it \
     -e PSQL_USERNAME -e PSQL_PASSWORD -e PSQL_NAME -e PSQL_HOST -e PSQL_PORT \
     -e ZAPSCRAP_ACTION -e ZAPSCRAP_TYPE -e ZAPSCRAP_LOCALIZATION -e ZAPSCRAP_MAX_PAGES \
-    -i emdemor/zapscrap:latest
+    emdemor/zapscrap:latest
 ```
 
 ---
