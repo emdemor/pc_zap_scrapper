@@ -3,7 +3,8 @@ import asyncio
 import random
 import uuid
 from importlib import resources
-from datetime import datetime, time
+from time import sleep
+from datetime import datetime
 from typing import get_args
 from tqdm.asyncio import tqdm_asyncio
 from urllib.request import Request, urlopen
@@ -366,7 +367,7 @@ async def _scroll_and_get_divs(page):
 
 
 def backoff_hdlr(details):
-    time.sleep(3)
+    sleep(3)
     logger.warning(
         "Backing off {wait:0.1f} seconds after {tries} tries "
         "calling function {target} with args {args} and kwargs "

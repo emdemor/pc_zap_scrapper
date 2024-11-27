@@ -63,11 +63,11 @@ async def scrape_async(action: str, estate_type: str, location: str, max_pages: 
 
     # Configuração do banco de dados
     db_params = dict(
-        user=os.getenv("DB_USERNAME"),
-        password=quote_plus(os.getenv("DB_PASSWORD")),
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("PSQL_USERNAME"),
+        password=quote_plus(os.getenv("PSQL_PASSWORD")),
+        host=os.getenv("PSQL_HOST"),
+        port=os.getenv("PSQL_PORT"),
+        dbname=os.getenv("PSQL_NAME"),
     )
 
     db_handler = DatabaseHandler(db_params, table=TableRealEstateInfo, echo=False)

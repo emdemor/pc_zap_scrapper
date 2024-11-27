@@ -22,11 +22,11 @@ def load():
             raise Exception(error_message)
 
     uri = "postgresql://{user}:{password}@{host}:{port}/{database}".format(
-        user=os.getenv("DB_USERNAME"),
-        password=os.getenv("DB_PASSWORD"),
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        database=os.getenv("DB_NAME"),
+        user=os.getenv("PSQL_USERNAME"),
+        password=os.getenv("PSQL_PASSWORD"),
+        host=os.getenv("PSQL_HOST"),
+        port=os.getenv("PSQL_PORT"),
+        database=os.getenv("PSQL_NAME"),
     )
 
     engine = create_engine(uri)

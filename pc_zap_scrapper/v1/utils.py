@@ -55,7 +55,7 @@ def _input_env_var(
     """Inputation of env var by the user"""
     env_value = None
 
-    if envvar == "DB_PASSWORD":
+    if envvar == "PSQL_PASSWORD":
         env_value = getpass(envvar + ":")
     else:
         env_value = input(envvar + ":")

@@ -24,9 +24,9 @@ PATH_TEMP = os.path.join(Path(pc_zap_scrapper.__file__).parents[1], "temp")
 PATH_TEMP_DOTENV = os.path.join(PATH_TEMP, ".env")
 
 ENV_VARS = [
-    "DB_USERNAME",
-    "DB_PASSWORD",
-    "DB_HOST",
-    "DB_PORT",
-    "DB_NAME",
+    "PSQL_USERNAME",
+    "PSQL_PASSWORD",
+    "PSQL_HOST",
+    "PSQL_PORT",
+    "PSQL_NAME",
 ]

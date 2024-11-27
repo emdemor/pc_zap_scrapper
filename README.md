@@ -13,11 +13,11 @@ $ pip install pc_zap_scrapper
 
 ## 2. Configurando a conexão com o banco
 Na etapa de load do banco de dados, é necessário fornecer as credenciais do banco de dados. Serão necessárias as informações:
-* `DB_USERNAME`
-* `DB_PASSWORD`
-* `DB_NAME`
-* `DB_HOST`
-* `DB_PORT`
+* `PSQL_USERNAME`
+* `PSQL_PASSWORD`
+* `PSQL_NAME`
+* `PSQL_HOST`
+* `PSQL_PORT`
 
 Esses dados podem ser passados manualmente ou através de arquivo `.env`
 
@@ -33,11 +33,11 @@ e fornecer cada uma das informações requeridas.
 alternativamente, pode-se definir o `.env` com as informações necessárias.
 ```bash
 # Arquivo .env para conexão com banco de dados PostgreSQL
-DB_USERNAME=nome_do_usuario
-DB_PASSWORD=admin123
-DB_NAME=nome_da_base
-DB_HOST=esse_e_meu.host
-DB_PORT=0000
+PSQL_USERNAME=nome_do_usuario
+PSQL_PASSWORD=admin123
+PSQL_NAME=nome_da_base
+PSQL_HOST=esse_e_meu.host
+PSQL_PORT=0000
 ```
 Salve esse arquivo em qualquer lugar; por exemplo, em `path/to/.env`. Depois, rode o comando
 

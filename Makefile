@@ -21,6 +21,9 @@ build:
 shell: build
 	$(DOCKER_RUN) $(DOCKER_ENV) -i --entrypoint=/bin/bash $(DOCKER_IMG)
 
+start: build
+	$(DOCKER_RUN) $(DOCKER_ENV) -i $(DOCKER_IMG)
+
 build-jupyter:
 	docker build -f docker/Dockerfile.jupyter -t $(JUPYTER_IMAGE) .
 

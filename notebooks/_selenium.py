@@ -200,7 +200,7 @@ class ScraperZap:
             return _paginas
    
     # Função para tratar os dados das páginas obtidos conforme os parâmetros passados
-    def tratamento_scraping(self, db_name: str = 'scraping', table_name: str = 'dados_imoveis_raw', if_exists: str = 'append'):
+    def tratamento_scraping(self, PSQL_NAME: str = 'scraping', table_name: str = 'dados_imoveis_raw', if_exists: str = 'append'):
         '''
             ### Objetivo:
             * Função para tratar os dados obtidos com a função scraping, salvando os dados na tabela especificada.
@@ -412,7 +412,7 @@ class ScraperZap:
 
             # try:
             #     # Salvando no banco de dados
-            #     engine = create_engine(f"postgresql://{os.environ['USERNAME_PSQL']}:{os.environ['PASSWORD_PSQL']}@localhost:5432/{db_name}")
+            #     engine = create_engine(f"postgresql://{os.environ['USERNAME_PSQL']}:{os.environ['PASSWORD_PSQL']}@localhost:5432/{PSQL_NAME}")
                 
             #     df.to_sql(
             #         f'{table_name}',
@@ -479,7 +479,7 @@ class ScraperZap:
             
             timestamp = str(datetime.datetime.now(tz = None))
 
-            return print(f'{timestamp} - Dados de {df.shape[0]} imóveis de {self.transacao} da cidade de {self.local}, do tipo {self.tipo}, foram salvos na tabela {table_name} do banco de dados {db_name} e no diretório {parquet_file_path}!')
+            return print(f'{timestamp} - Dados de {df.shape[0]} imóveis de {self.transacao} da cidade de {self.local}, do tipo {self.tipo}, foram salvos na tabela {table_name} do banco de dados {PSQL_NAME} e no diretório {parquet_file_path}!')
         else:
             return _paginas
     
@@ -547,14 +547,14 @@ class ScraperZap:
                     print(f'Erro na operação: {exc}')
     
     # Função para checar o total de imóveis disponíveis, tanto para venda quanto para aluguel, na cidade especificada. 
-    # def check_cidades(self, db_name: str = 'scraping', table_name: str = 'disponibilidade_municipios', if_exists: str = 'append', modo:str = 'cidade', cidade: str = 'se+aracaju', estado: str = None):
+    # def check_cidades(self, PSQL_NAME: str = 'scraping', table_name: str = 'disponibilidade_municipios', if_exists: str = 'append', modo:str = 'cidade', cidade: str = 'se+aracaju', estado: str = None):
     #     '''
     #         ### Objetivo
     #         * Checa, de forma geral, o total de imóveis de aluguel ou venda disponíveis no local especificado.
     #         * Salva os dados consultados na base de dados que guarda a disponibilidade de imóveis de venda e locação.
     #         * Retorna um dicionário com dados de venda e aluguel
     #         ### Parâmetros
-    #         #### db_name:
+    #         #### PSQL_NAME:
     #             * Base de dados onde será salvo os dados da consulta.
     #         #### table_name:
     #             * Tabela onde a consulta será salva.
@@ -653,7 +653,7 @@ class ScraperZap:
 
     #         try:
     #             # Salvando na tabela de disponibilidade_municipios
-    #             engine = create_engine(f"postgresql://{os.environ['USERNAME_PSQL']}:{os.environ['PASSWORD_PSQL']}@localhost:5432/{db_name}")
+    #             engine = create_engine(f"postgresql://{os.environ['USERNAME_PSQL']}:{os.environ['PASSWORD_PSQL']}@localhost:5432/{PSQL_NAME}")
                 
     #             df.to_sql(
     #                 f'{table_name}',
