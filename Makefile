@@ -38,3 +38,7 @@ build-jupyter:
 
 start-jupyter: build-jupyter
 	docker run $(DOCKER_ENV) -p 8888:8888 -v $(PWD):/app $(JUPYTER_IMAGE)
+
+publish:
+	docker tag $(DOCKER_IMG) emdemor/$(DOCKER_IMG)
+	docker push emdemor/$(DOCKER_IMG)

@@ -4,104 +4,107 @@ Scrapper para obter dados de imóveis na cidade de Poços de Caldas, MG. O aplic
 
 ---
 
-## 1. Instalação
-A instalação é dada através do `pip`:
-```bash
-$ pip install pc_zap_scrapper 
+## A. Usando docker
+
+1. Defina as seguintes variáveis de ambiente:
+
 ```
+# PostgreSQL connection information
+PSQL_USERNAME=username
+PSQL_PASSWORD=p4$$w0rd
+PSQL_NAME=dbname
+PSQL_HOST=host.com
+PSQL_PORT=5432
+
+# Scraping parameters
+ZAPSCRAP_ACTION=venda
+ZAPSCRAP_TYPE=imoveis
+ZAPSCRAP_LOCALIZATION=mg+lavras
+ZAPSCRAP_MAX_PAGES=15
+```
+
+Você pode exportar uma a uma ou então as coloque em um arquivo `.env` e então rode:
+
+```bash
+export $(grep -v '^#' .env | xargs)
+```
+
+2. Rode
+
+```bash
+docker run \
+    -e PSQL_USERNAME -e PSQL_PASSWORD -e PSQL_NAME -e PSQL_HOST -e PSQL_PORT \
+    -e ZAPSCRAP_ACTION -e ZAPSCRAP_TYPE -e ZAPSCRAP_LOCALIZATION -e ZAPSCRAP_MAX_PAGES \
+    -i emdemor/zapscrap:latest
+```
+
 ---
 
-## 2. Configurando a conexão com o banco
-Na etapa de load do banco de dados, é necessário fornecer as credenciais do banco de dados. Serão necessárias as informações:
-* `PSQL_USERNAME`
-* `PSQL_PASSWORD`
-* `PSQL_NAME`
-* `PSQL_HOST`
-* `PSQL_PORT`
+## B. Instalação
 
-Esses dados podem ser passados manualmente ou através de arquivo `.env`
-
-### 2.a Configuração manual das credenciais
-Basta rodar:
+### 1. Clone o repositório
 
 ```bash
-$ zapscrap configure -p path/to/.env
-```
-e fornecer cada uma das informações requeridas.
-
-### 2.b Configuração através do arquivo `.env`
-alternativamente, pode-se definir o `.env` com as informações necessárias.
-```bash
-# Arquivo .env para conexão com banco de dados PostgreSQL
-PSQL_USERNAME=nome_do_usuario
-PSQL_PASSWORD=admin123
-PSQL_NAME=nome_da_base
-PSQL_HOST=esse_e_meu.host
-PSQL_PORT=0000
-```
-Salve esse arquivo em qualquer lugar; por exemplo, em `path/to/.env`. Depois, rode o comando
-
-```bash
-$ zapscrap configure -p path/to/.env
-```
----
-
-## 3. Utilização
-
-O scrapping, seguido da sanitização dos dados e carregamento no banco de dados é feito simplesmente com o comando:
-
-```bash
-# Exemplo do uso do comando 'zapscrap'
-$ zapscrap
+git clone git@github.com:emdemor/pc_zap_scrapper.git
+cd pc_zap_scrapper
 ```
 
-Após sua chamada, você deverá ver um barra de progresso indicado a evolução do processo de raspagem de dados.
+### 2. Instale dependências de sistema necessárias para compilação e para o Google Chrome e ChromeDriver
 
-É também possível executar individualmente cada etapa dessa ETL. Isso está documentado nas seções posteriores
-
-### 3.1 Webscrapping para extração de dados
-
-Para executar o Scrapping, basta utilizar o comando `zapscrap search`. Esse comando tem quatro argumentos básicos:
-
-* `action` (`-a` ou `--action`): Define se você está procurando por imóveis a venda ou para aluguel. Por padrão, está configurado como "venda".
-```bash
-# Exemplo do uso do argumento 'action'
-$ zapscrap search -a venda
+```
+sudo apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    libc-dev \
+    libssl-dev \
+    libffi-dev \
+    libbz2-dev \
+    liblzma-dev \
+    libz-dev \
+    wget \
+    gnupg \
+    unzip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 ```
 
-* `estate_type` (`-t` ou `--estate_type`): Define se você vai procurar por casas, apartamentos ou ambos. Por padrão, esta configurado com o  valor "imoveis", que representa casas e apartamentos.
+### 3. Adicione o repositório do Google Chrome e instale o Chrome
+
 ```bash
-# Exemplo do uso do argumento 'estate_type'
-$ zapscrap search -t imoveis
+wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list' && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends google-chrome-stable && \
+    rm -rf /var/lib/apt/lists/*
 ```
 
-* `estate_type` (`-l` ou `--location`): Define o local onde procurar. O formato deve ser uf+nome-da-cidade. Por exemplo, para São Paulo capital de ve ficar como sp+sao-paulo.
+### 4. Baixe e instale o ChromeDriver
+
 ```bash
-# Exemplo do uso do argumento 'location'
-$ zapscrap search -l mg+pocos-de-caldas
+CHROME_DRIVER_VERSION=$(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
+    wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip && \
+    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
+    rm /tmp/chromedriver.zip && \
+    chmod +x /usr/local/bin/chromedriver
 ```
 
-* `max_pages` (`-m` ou `--max_pages`): Define o alcance da paginação. Por exemplo, se for escolhido p valor 3 para esse parâmetro, apenas as três primeiras páginas serão retornadas. Por padrão, é atribuido a ele o valor `None` que indica ao scrapper para trazer todas as páginas.
+### 5. Instale o playwright
+
 ```bash
-# Exemplo do uso do argumento 'max_pages'
-$ zapscrap search -m 2
+pip install playwright==1.48.0
+playwright install
+playwright install-deps
 ```
 
-Após o scrapping, o programa irá manter os dados na memórias da forma como foram consultados
+### 6. Instale a aplicação
 
-### 3.2 Formatação dos dados
-
-Em seguida, deve-se formatar os dados para o esquema necessário na ingestão. 
+De dentro da raiz do projeto, rode:
 
 ```bash
-# Exemplo do uso do comando 'format-data'
-$ zapscrap format-data
+pip install .
 ```
 
-### 3.3 Ingestão no banco
+### 7. execute
 
-Por último, já com a base sanitizado, deve-se executar a ingestão de fato:
 ```bash
-# Exemplo do uso do comando 'db-ingest'
-$ zapscrap db-ingest
+zapscrap scrape -a $ZAPSCRAP_ACTION -t $ZAPSCRAP_TYPE -l $ZAPSCRAP_LOCALIZATION -m $ZAPSCRAP_MAX_PAGES
 ```
