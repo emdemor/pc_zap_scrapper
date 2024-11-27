@@ -1,12 +1,14 @@
 import re
 import asyncio
 import random
+from importlib import resources
 from datetime import datetime
 from typing import get_args
 from tqdm.asyncio import tqdm_asyncio
 
 import pandas as pd
 from bs4 import BeautifulSoup
+from unidecode import unidecode
 from random_user_agent.user_agent import UserAgent
 from playwright.async_api import async_playwright
 
@@ -45,11 +47,27 @@ async def get_estates_from_page(
 
 
 def get_info_from_div(div, action: ACTION_TYPES, search_date: str | None = None):
+
+    def _format_neighbor_name(text: str) -> str:
+        return unidecode(text.strip().lower())
+
+    pc_neighbors_latlong = (
+        pd.read_parquet(resources.files("pc_zap_scrapper").joinpath("datasets/external/neighbor_latlong.parquet"))
+        .set_index("neighborhood")
+        .to_dict(orient="index")
+    )
+
+    pc_neighbors_latlong = {_format_neighbor_name(k): v for k, v in pc_neighbors_latlong.items() if k}
+
     search_date = search_date or datetime.now()
     prices = _get_prices(div)
     snippet = _get_snippet(div)
     location = _get_location(div)
     type = _get_type(snippet)
+    neighbor = location.get("neighbor")
+    latlong = pc_neighbors_latlong.get(_format_neighbor_name(neighbor), {})
+    latitude = latlong.get("latitude", None)
+    longitude = latlong.get("longitude", None)
 
     return RealEstateInfo(
         id=_get_id(div),
@@ -61,9 +79,11 @@ def get_info_from_div(div, action: ACTION_TYPES, search_date: str | None = None)
         image_list=_get_image_list(div),
         snippet=snippet,
         street=location.get("street"),
-        neighbor=location.get("neighbor"),
+        neighbor=neighbor,
         city=location.get("city"),
         state=location.get("state"),
+        latitude=latitude,
+        longitude=longitude,
         floor_size=_get_floor_size(div),
         number_of_rooms=_get_number_of_rooms(div),
         number_of_bathrooms=_get_number_of_bathrooms(div),

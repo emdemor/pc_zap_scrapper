@@ -17,6 +17,8 @@ class RealEstateInfo(BaseModel):
     neighbor: str | None = None
     city: str | None = None
     state: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
     floor_size: int | None = None
     number_of_rooms: int | None = None
     number_of_bathrooms: int | None = None

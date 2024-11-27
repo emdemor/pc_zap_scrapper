@@ -44,11 +44,8 @@ RUN playwright install-deps
 # Instalar o Selenium
 RUN pip install selenium webdriver-manager
 
-USER jovyan
-
-# Copiar arquivos necessários para o app
 COPY ./requirements.txt ./
-RUN pip install -r requirements.txt
+RUN pip install  -r requirements.txt
 
 COPY ./pc_zap_scrapper ./pc_zap_scrapper
 COPY ./notebooks ./notebooks
@@ -56,11 +53,10 @@ COPY ./README.md ./
 COPY ./LICENSE ./
 COPY ./pyproject.toml ./
 
-USER root
 RUN chown -R jovyan:users /app
-USER jovyan
 
 RUN pip install . --no-deps
+USER jovyan
 
 EXPOSE 8888
 

@@ -42,17 +42,11 @@ dependencies = [
 ]
 
 [tool.setuptools.package-data]
-pc_zap_scrapper = ["datasets/external/*"]
+pc_zap_scrapper = ["datasets/**/*"]
 
 [tool.setuptools]
 packages = ["pc_zap_scrapper", "pc_zap_scrapper.v2"]
 include-package-data = true
-
-# [tool.setuptools.packages.find]
-# where = ["pc_zap_scrapper"]  # list of folders that contain the packages (["."] by default)
-# include = ["pc_zap_scrapper*"]  # package names should match these glob patterns (["*"] by default)
-# exclude = ["notebooks*", "dataasets*"]  # exclude packages matching these glob patterns (empty by default)
-# namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 
 [tool.setuptools.dynamic]
 version = {attr = "pc_zap_scrapper.__version__"}
