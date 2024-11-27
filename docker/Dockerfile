@@ -60,6 +60,4 @@ ENV ZAPSCRAP_TYPE=imoveis
 ENV ZAPSCRAP_LOCALIZATION=mg+pocos-de-caldas
 ENV ZAPSCRAP_MAX_PAGES=25
 
-CMD echo zapscrap scrape -a "${ZAPSCRAP_ACTION}" -t "${ZAPSCRAP_TYPE}" -l "${ZAPSCRAP_LOCALIZATION}" -m "${ZAPSCRAP_MAX_PAGES}"
-
-# CMD zapscrap scrape -a "${ACTION}" -t "${TYPE}" -l "${LOCALIZATION}" -m "${MAX_PAGES}"
+CMD zapscrap scrape -a "${ZAPSCRAP_ACTION}" -t "${ZAPSCRAP_TYPE}" -l "${ZAPSCRAP_LOCALIZATION}" -m "${ZAPSCRAP_MAX_PAGES}"
