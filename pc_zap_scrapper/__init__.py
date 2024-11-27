@@ -1,32 +1,18 @@
-import os
-import pc_zap_scrapper
-from pathlib import Path
-from pc_zap_scrapper._version import __version__
+from pc_zap_scrapper.v2.config import config
+from pc_zap_scrapper.v2.database import DatabaseHandler, TableRealEstateInfo
 
-ACTION = "venda"
+__version__ = "2.0.0"
 
-LOCALIZATION = "mg+pocos-de-caldas"
+DEFAULT_ACTION = "venda"
+DEFAULT_TYPE = "imoveis"
+DEFAULT_LOCALIZATION = "mg+pocos-de-caldas"
 
-TYPE = "imoveis"
-
-BASE_PATH = Path(pc_zap_scrapper.__file__).parents[0]
-
-PATH_DATA_RAW =  f"{BASE_PATH}/datasets/raw/data_raw_{LOCALIZATION}_{ACTION}_{TYPE}.parquet"
-
-PATH_DATA_INTERIM = (
-    f"{BASE_PATH}/datasets/interim/data_interim_{LOCALIZATION}_{ACTION}_{TYPE}.parquet"
-)
-
-PATH_NEIGHBORHOOD_COORDS = f"{BASE_PATH}/datasets/external/neighbor_latlong.parquet"
-
-PATH_TEMP = os.path.join(Path(pc_zap_scrapper.__file__).parents[1], "temp")
-
-PATH_TEMP_DOTENV = os.path.join(PATH_TEMP, ".env")
-
-ENV_VARS = [
-    "DB_USERNAME",
-    "DB_PASSWORD",
-    "DB_HOST",
-    "DB_PORT",
-    "DB_NAME",
+__all__ = [
+    "__version__",
+    "config",
+    "DatabaseHandler",
+    "TableRealEstateInfo",
+    "DEFAULT_ACTION",
+    "DEFAULT_TYPE",
+    "DEFAULT_LOCALIZATION",
 ]

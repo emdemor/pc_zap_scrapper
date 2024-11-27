@@ -1,8 +1,7 @@
 pydantic
 backoff
 bump2version
-click
-click_default_group
+typer
 sphinx
 sphinx-rtd-theme
 toml
@@ -25,3 +24,4 @@ pydantic_settings
 unidecode
 sqlalchemy[asyncio]
 asyncpg
+pydotenv

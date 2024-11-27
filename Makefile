@@ -14,6 +14,7 @@ DOCKER_RUN := docker run --rm -t
 
 PYTEST := python -B -m pytest
 
+.PHONY: build
 build:
 	docker build -f docker/Dockerfile -t $(DOCKER_IMG) .
 
