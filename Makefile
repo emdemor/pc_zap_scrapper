@@ -2,7 +2,7 @@
 
 export
 
-PACKAGE_NAME = nwcrawler
+PACKAGE_NAME = zapscrap
 
 PWD := $(shell pwd)
 JUPYTER_IMAGE := $(PACKAGE_NAME)_jupyter:latest
