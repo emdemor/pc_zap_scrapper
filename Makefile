@@ -1,53 +1,44 @@
+PACKAGE_NAME = zapscrap
+
+PWD := $(shell pwd)
+JUPYTER_IMAGE := $(PACKAGE_NAME)_jupyter:latest
+
+DOCKER_IMG := $(PACKAGE_NAME):latest
+DOCKER_ENV := -e PSQL_USERNAME -e PSQL_PASSWORD -e PSQL_NAME -e PSQL_HOST -e PSQL_PORT \
+              -e ZAPSCRAP_ACTION -e ZAPSCRAP_TYPE -e ZAPSCRAP_LOCALIZATION -e ZAPSCRAP_MAX_PAGES
+
+DOCKER_RUN := docker run --rm -t
+
+PYTEST := python -B -m pytest
+
+guard-%:
+	@ if [ -z "$($*)" ]; then \
+		echo "Missing '$*' variable"; \
+		exit 1; \
+	fi
+
+VAR_NAMES := $(strip $(subst -e ,,$(DOCKER_ENV)))
+START_GUARDS := $(foreach var,$(VAR_NAMES),guard-$(var))
+
+.PHONY: build
 build:
-	bumpversion build
-	pip install build
-	pip install twine
-	python -m build
-	$(MAKE) doc
+	docker build -f docker/Dockerfile -t $(DOCKER_IMG) .
 
-release:
-	bumpversion release --tag
-	pip install build
-	python -m build
-	$(MAKE) pypi
-	$(MAKE) doc
-	$(MAKE) clear
+shell: build
+	$(DOCKER_RUN) $(DOCKER_ENV) -i --entrypoint=/bin/bash $(DOCKER_IMG)
 
-pypi:
-	pip install twine
-	python -m twine upload dist/*
+start: build $(START_GUARDS)
+	$(DOCKER_RUN) $(DOCKER_ENV) -i $(DOCKER_IMG)
 
-release-up:
-	bumpversion release
+set-envvar:
+	export $(grep -v '^#' .env | xargs)
 
-patch:
-	bumpversion patch
+build-jupyter:
+	docker build -f docker/Dockerfile.jupyter -t $(JUPYTER_IMAGE) .
 
-test-build:
-	pip install -e .
-	$(MAKE) doc
-	$(MAKE) clear
+start-jupyter: build-jupyter
+	docker run $(DOCKER_ENV) -p 8888:8888 -v $(PWD):/app $(JUPYTER_IMAGE)
 
-doc:
-	bash scripts/build.sh
-
-clear:
-#                                Change app_name below
-	rm -rf pc_zap_scrapper.egg-info
-	rm -rf dist
-	
-uninstall:
-#                                Change app_name below
-	pip uninstall pc_zap_scrapper -y
-
-activate:
-#                                Change app_name below
-	conda activate pc_zap_scrapper
-
-env-create:
-#                                Change app_name below
-	conda env create -n pc_zap_scrapper --file environment.yml
-
-env-clear:
-#                                Change app_name below
-	conda env remove -n pc_zap_scrapper
+publish:
+	docker tag $(DOCKER_IMG) emdemor/$(DOCKER_IMG)
+	docker push emdemor/$(DOCKER_IMG)

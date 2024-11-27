@@ -21,45 +21,21 @@ classifiers = [
     "Topic :: Utilities",
 ]
 keywords = ["template", "app"]
-dynamic = ["version"]
-dependencies = [
-    "bump2version==1.0.1",
-    "click==8.1.3",
-    "click_default_group==1.2.2",
-    "sphinx==6.1.1",
-    "sphinx-rtd-theme==0.5.1",
-    "toml==0.10.2",
-    "fastparquet==0.8.1",
-    "geopy==2.2.0",
-    "pandas==1.2.4",
-    "pandasql==0.7.3",
-    "pyarrow",
-    "psycopg2-binary==2.9.5",
-    "python-dotenv==0.20.0",
-    "sqlalchemy==1.3.20",
-    "zapscrapper==0.0.7",
-    "loguru==0.6.0",
-]
+dynamic = ["version", "dependencies"]
 
 [tool.setuptools.package-data]
-pc_zap_scrapper = ["datasets/external/*"]
+pc_zap_scrapper = ["datasets/**/*"]
 
 [tool.setuptools]
-packages = ["pc_zap_scrapper"]
+packages = ["pc_zap_scrapper", "pc_zap_scrapper.v2"]
 include-package-data = true
-
-# [tool.setuptools.packages.find]
-# where = ["pc_zap_scrapper"]  # list of folders that contain the packages (["."] by default)
-# include = ["pc_zap_scrapper*"]  # package names should match these glob patterns (["*"] by default)
-# exclude = ["notebooks*", "dataasets*"]  # exclude packages matching these glob patterns (empty by default)
-# namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
 
 [tool.setuptools.dynamic]
 version = {attr = "pc_zap_scrapper.__version__"}
-# dependencies = {file = ["requirements.txt"]}
+dependencies = {file = ["requirements.txt"]}
 
 [project.scripts]
-zapscrap = "pc_zap_scrapper.__main__:cli"
+zapscrap = "pc_zap_scrapper.__main__:main"
 
 [tool.black]
 line-length = 120

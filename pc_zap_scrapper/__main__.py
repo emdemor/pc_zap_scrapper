@@ -1,145 +1,121 @@
+import asyncio
+import os
 import sys
-import click
+from urllib.parse import quote_plus
 from loguru import logger
-from dotenv import load_dotenv
-from click_default_group import DefaultGroup
-
-from pc_zap_scrapper import ACTION, LOCALIZATION, TYPE, PATH_TEMP_DOTENV, __version__
-from pc_zap_scrapper.load import load
-from pc_zap_scrapper.scrap import search_estates
-from pc_zap_scrapper.transform import format_data
-from pc_zap_scrapper.utils import set_directories, validate_environment, configure
-
-
-@click.group(cls=DefaultGroup, default="main", default_if_no_args=True)
-def cli():
-    """Command line interface for zap scrapping"""
-    pass
-
-
-@cli.command(name="env")
-def env():
-    """Check environment variables"""
-
-    if not load_dotenv(dotenv_path=PATH_TEMP_DOTENV):
-        error_message = "No '.env' file was found."
-        logger.error(error_message)
-        raise Exception(error_message)
-
-    validate_environment()
-
-
-@cli.command(name="search")
-@click.option(
-    "-a",
-    "--action",
-    default=ACTION,
-    help="Action to find. Can be 'venda' or 'aluguel'",
-    type=str,
+import typer
+from pc_zap_scrapper import __version__
+from pc_zap_scrapper import (
+    DEFAULT_ACTION,
+    DEFAULT_LOCALIZATION,
+    DEFAULT_TYPE,
+    DatabaseHandler,
+    TableRealEstateInfo,
 )
-@click.option(
-    "-t",
-    "--estate_type",
-    default=TYPE,
-    help="Estate type. Can be 'imoveis', 'casas' ou 'apartamentos'",
-    type=str,
+from pc_zap_scrapper.v2.scrape import (
+    get_estates_from_page,
+    get_html_page,
+    get_number_of_pages,
+    get_number_of_real_estates,
 )
-@click.option(
-    "-l",
-    "--location",
-    default=LOCALIZATION,
-    help="City and state, in the format 'uf+city-name'",
-    type=str,
-)
-@click.option(
-    "-m",
-    "--max_pages",
-    default=None,
-    help="Max number of pages",
-    type=int,
-)
-def search(action: str, estate_type: str, location: str, max_pages: int):
-    """Run the scrapper for defined action, estate_type and location"""
-    logger.info("--> Search Function")
-    search_estates(action, estate_type, location, max_pages)
+
+app = typer.Typer(help="Command line interface for zap scrapping")
 
 
-@cli.command(name="format-data")
-def format():
-    logger.info("--> Format Data Function")
-    format_data()
-
-
-@cli.command(name="db-ingest")
-def db_ingest():
-    logger.info("--> DB Ingest Function")
-    load()
-
-
-@cli.command(name="configure")
-@click.option(
-    "-p",
-    "--dotenv_path",
-    default=None,
-    help="Path to the .env file",
-    type=str,
-)
-def config(dotenv_path):
-    print("--> Config")
-    configure(dotenv_path)
-
-@cli.command(name="--version")
-def version():
-    sys.stdout.write(__version__)
-    sys.stdout.write("\n")
-
-@cli.command()
-@click.option(
-    "-a",
-    "--action",
-    default=ACTION,
-    help="Action to find. Can be 'venda' or 'aluguel'",
-    type=str,
-)
-@click.option(
-    "-t",
-    "--estate_type",
-    default=TYPE,
-    help="Estate type. Can be 'imoveis', 'casas' ou 'apartamentos'",
-    type=str,
-)
-@click.option(
-    "-l",
-    "--location",
-    default=LOCALIZATION,
-    help="City and state, in the format 'uf+city-name'",
-    type=str,
-)
-@click.option(
-    "-m",
-    "--max_pages",
-    default=None,
-    help="Max number of pages",
-    type=int,
-)
-def main(action: str, estate_type: str, location: str, max_pages: int):
-    """Main function. Set the directories, run the scrapper,
-    format data and load to PostgreSQL database.
+@app.command()
+def scrape(
+    action: str = typer.Option(
+        DEFAULT_ACTION,
+        "-a",
+        "--action",
+        help="Action to find. Can be 'venda' or 'aluguel'",
+    ),
+    estate_type: str = typer.Option(
+        DEFAULT_TYPE,
+        "-t",
+        "--estate-type",
+        help="Estate type. Can be 'imoveis', 'casas' ou 'apartamentos'",
+    ),
+    location: str = typer.Option(
+        DEFAULT_LOCALIZATION,
+        "-l",
+        "--location",
+        help="City and state, in the format 'uf+city-name'",
+    ),
+    max_pages: int = typer.Option(
+        None,
+        "-m",
+        "--max-pages",
+        help="Max number of pages",
+    ),
+):
     """
+    Run the scrapper for defined action, estate_type, and location.
+    """
+    asyncio.run(scrape_async(action, estate_type, location, max_pages))
 
-    set_directories()
 
-    search_estates(action, estate_type, location, max_pages)
+async def scrape_async(action: str, estate_type: str, location: str, max_pages: int):
+    """
+    Function to execute the scraping asynchronously.
+    """
+    logger.info(f"Scraping with action={action}, estate_type={estate_type}, location={location}, max_pages={max_pages}")
 
-    format_data()
+    # Configuração do banco de dados
+    db_params = dict(
+        user=os.getenv("PSQL_USERNAME"),
+        password=quote_plus(os.getenv("PSQL_PASSWORD")),
+        host=os.getenv("PSQL_HOST"),
+        port=os.getenv("PSQL_PORT"),
+        dbname=os.getenv("PSQL_NAME"),
+    )
 
-    load()
+    db_handler = DatabaseHandler(db_params, table=TableRealEstateInfo, echo=False)
+
+    try:
+        soup = get_html_page(f"https://www.zapimoveis.com.br/{action}/{estate_type}/{location}")
+        number_of_real_estates = get_number_of_real_estates(soup)
+        number_of_pages = get_number_of_pages(number_of_real_estates)
+        logger.info(f"number_of_real_estates = {number_of_real_estates}")
+        logger.info(f"number_of_pages = {number_of_pages}")
+
+        N_EXPECTED_PAGES = max_pages or 25
+
+        for page in range(1, min(number_of_pages + 1, N_EXPECTED_PAGES + 1)):
+            logger.info(f"Scraping page {page}")
+            try:
+
+                estates = await get_estates_from_page(
+                    action=action,
+                    type=estate_type,
+                    localization=location,
+                    page=page,
+                )
+
+                await db_handler.create_table()
+                await db_handler.insert_data(estates)
+            except TimeoutError:
+                logger.warning(f"Timeout on page {page}, skipping...")
+                continue
+            except Exception as e:
+                logger.error(f"Erro ao persistir dados da página {page}: {e}")
+
+    finally:
+        await db_handler.close()
+        logger.info("Database handler closed.")
+
+
+@app.command()
+def version():
+    """
+    Print the version of the application.
+    """
+    sys.stdout.write(f"{__version__}\n")
+
+
+def main():
+    app()
 
 
 if __name__ == "__main__":
-
-    try:
-        cli()
-
-    except Exception as err:
-        logger.error(err)
+    main()
