@@ -361,11 +361,11 @@ def _get_type_from_snippet(snippet):
     if "apartamento" in snippet.lower():
         return "Apartamento"
 
-    if is_rural:
-        return "Rural"
-
     if "casa" in snippet.lower():
         return "Casa"
+
+    if is_lote:
+        return "Lote"
 
     if "flat" in snippet.lower():
         return "Flat"
@@ -376,8 +376,8 @@ def _get_type_from_snippet(snippet):
     if is_comercial:
         return "Comercial"
 
-    if is_lote:
-        return "Lote"
+    if is_rural:
+        return "Rural"
 
 
 async def _random_delay(min_delay=1, max_delay=3):
