@@ -198,11 +198,13 @@ def _get_image_list(div):
 
 @suppress_errors_and_log
 def _get_snippet(div):
-    subtitle = div.find("h2", attrs={"data-testid": "card-header"})
     if subtitle := div.find("h2", attrs={"data-testid": "card-header"}):
         if spans := subtitle.findAll("span"):
             texts = [x.text for x in spans]
             return texts[0].split(",")[0]
+
+    if subtitle := div.find("h2"):
+        return subtitle.text
 
 
 @suppress_errors_and_log
@@ -218,6 +220,16 @@ def _get_location(div):
                 "state": state,
             }
 
+    if subtitle := div.find("h2"):
+        elements = str(subtitle.text).split(",")
+        if len(elements) == 2:
+            return {
+                "street": None,
+                "neighbor": elements[0],
+                "city": elements[1],
+                "state": None,
+            }
+        logger.warning(f"It wa not possible to get locatino info from snippet '{subtitle}'")
     return {
         "street": None,
         "neighbor": None,
