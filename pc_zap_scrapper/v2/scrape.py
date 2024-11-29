@@ -65,7 +65,9 @@ async def get_estates_from_page(
 def get_info_from_div(div, action: ACTION_TYPES, search_date: str | None = None):
 
     def _format_neighbor_name(text: str) -> str:
-        return unidecode(text.strip().lower())
+        if text:
+            return unidecode(text.strip().lower())
+        return None
 
     pc_neighbors_latlong = (
         pd.read_parquet(resources.files("pc_zap_scrapper").joinpath("datasets/external/neighbor_latlong.parquet"))
@@ -81,7 +83,8 @@ def get_info_from_div(div, action: ACTION_TYPES, search_date: str | None = None)
     location = _get_location(div)
     type = _get_type(snippet)
     neighbor = location.get("neighbor")
-    latlong = pc_neighbors_latlong.get(_format_neighbor_name(neighbor), {})
+    formatted_neighbor_name = _format_neighbor_name(neighbor)
+    latlong = pc_neighbors_latlong.get(formatted_neighbor_name, {}) if formatted_neighbor_name else {}
     latitude = latlong.get("latitude", None)
     longitude = latlong.get("longitude", None)
 
