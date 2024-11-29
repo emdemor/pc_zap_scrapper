@@ -215,6 +215,13 @@ def _get_location(div):
                 "state": state,
             }
 
+    return {
+        "street": None,
+        "neighbor": None,
+        "city": None,
+        "state": None,
+    }
+
 
 @suppress_errors_and_log
 def get_amenity(div, itemprop):
@@ -297,6 +304,10 @@ def _get_prices(div):
 
 @suppress_errors_and_log
 def _get_type(snippet):
+    if not snippet:
+        logger.warning("No snippet found")
+        return None
+    snippet = str(snippet)
     is_rural = ("fazenda" in snippet.lower()) or ("sítio" in snippet.lower()) or ("chácara" in snippet.lower())
     is_comercial = ("ponto comercial" in snippet.lower()) or ("loja" in snippet.lower()) or ("box" in snippet.lower())
     is_lote = ("lote" in snippet.lower()) or ("terreno" in snippet.lower())
