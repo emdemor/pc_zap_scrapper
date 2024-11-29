@@ -81,7 +81,7 @@ def get_info_from_div(div, action: ACTION_TYPES, search_date: str | None = None)
     prices = _get_prices(div)
     snippet = _get_snippet(div)
     location = _get_location(div)
-    type = _get_type(snippet)
+    type = _get_type(div)
     neighbor = location.get("neighbor")
     formatted_neighbor_name = _format_neighbor_name(neighbor)
     latlong = pc_neighbors_latlong.get(formatted_neighbor_name, {}) if formatted_neighbor_name else {}
@@ -318,7 +318,38 @@ def _get_prices(div):
 
 
 @suppress_errors_and_log
-def _get_type(snippet):
+def _get_type(div):
+
+    if snippet := _get_snippet(div):
+        type = _get_type_from_snippet(snippet)
+
+    if type:
+        return type
+
+    if "apartamento" in str(div).lower():
+        return "Apartamento"
+
+    if "casa" in str(div).lower():
+        return "Casa"
+
+    if "cobertura" in str(div).lower():
+        return "Apartamento"
+
+    if "flat" in str(div).lower():
+        return "Flat"
+
+    if "chacara" in unidecode(str(div).lower()):
+        return "Rural"
+
+    if "sitio" in unidecode(str(div).lower()):
+        return "Rural"
+
+    if "fazenda" in unidecode(str(div).lower()):
+        return "Rural"
+
+
+@suppress_errors_and_log
+def _get_type_from_snippet(snippet):
     if not snippet:
         logger.warning("No snippet found")
         return None
