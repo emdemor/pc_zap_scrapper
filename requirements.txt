@@ -25,3 +25,12 @@ unidecode
 sqlalchemy[asyncio]
 asyncpg
 pydotenv
+scikit-learn
+# xgboost
+# lightgbm
+category_encoders
+# catboost
+shap
+seaborn
+duecredit
+forestci

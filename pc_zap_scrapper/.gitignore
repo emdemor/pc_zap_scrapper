@@ -1,2 +1,3 @@
 datasets/raw/*
-git datasets/interim/*
+datasets/interim/*
+datasets/imoveis_pc_v01.parquet
