@@ -26,10 +26,10 @@ sqlalchemy[asyncio]
 asyncpg
 pydotenv
 scikit-learn
-# xgboost
-# lightgbm
+xgboost
+lightgbm
 category_encoders
-# catboost
+catboost
 shap
 seaborn
 duecredit
