@@ -1,4 +1,5 @@
 import asyncio
+import backoff
 import os
 import sys
 from urllib.parse import quote_plus
@@ -82,28 +83,42 @@ async def scrape_async(action: str, estate_type: str, location: str, max_pages: 
         N_EXPECTED_PAGES = max_pages or 25
 
         for page in range(1, min(number_of_pages + 1, N_EXPECTED_PAGES + 1)):
-            logger.info(f"Scraping page {page}")
             try:
-
-                estates = await get_estates_from_page(
-                    action=action,
-                    type=estate_type,
-                    localization=location,
-                    page=page,
-                )
-
-                await db_handler.create_table()
-                await db_handler.insert_data(estates)
-            except TimeoutError:
-                logger.warning(f"Timeout on page {page}, skipping...")
+                await _scrape_page(page, action, estate_type, location, db_handler)
+            except PageScrapeError as e:
+                logger.error(f"Erro ao processar página {page}: {e}")
                 continue
-            except Exception as e:
-                logger.error(f"Erro ao persistir dados da página {page}: {e}")
 
     finally:
         await db_handler.close()
         logger.info("Database handler closed.")
 
+class PageScrapeError(Exception):
+    pass
+
+def backoff_hdlr(details):
+    print ("Backing off {wait:0.1f} seconds after {tries} tries "
+           "calling function {target} with args {args} and kwargs "
+           "{kwargs}".format(**details))
+
+@backoff.on_exception(backoff.expo, PageScrapeError, max_tries=3, on_backoff=backoff_hdlr)
+async def _scrape_page(page, action, estate_type, location, db_handler):
+    logger.info(f"Scraping page {page}")
+    try:
+
+        estates = await get_estates_from_page(
+            action=action,
+            type=estate_type,
+            localization=location,
+            page=page,
+        )
+
+        await db_handler.create_table()
+        await db_handler.insert_data(estates)
+    except Exception as e:
+        message = f"Erro ao persistir dados da página {page}."
+        logger.warning(message + " Uma nova tentativa será realizada.")
+        raise PageScrapeError(message)
 
 @app.command()
 def version():

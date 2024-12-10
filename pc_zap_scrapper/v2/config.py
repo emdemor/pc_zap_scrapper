@@ -12,7 +12,7 @@ class Config(BaseSettings):
     BROWSER_EXTRA_HTTP_HEADERS: dict = Field(
         default={"Accept-Language": "en-US,en;q=0.9", "Referer": "https://www.google.com/"}
     )
-    BROWSER_TIMEOUT: int = Field(default=10000, env="BROWSER_TIMEOUT")
+    BROWSER_TIMEOUT: int = Field(default=60000, env="BROWSER_TIMEOUT")
 
 
 load_dotenv()
