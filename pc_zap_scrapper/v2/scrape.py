@@ -24,6 +24,22 @@ from pc_zap_scrapper.v2.config import config, REAL_ESTATE_TYPES, ACTION_TYPES
 from pc_zap_scrapper.v2.utils import get_integer_fields, suppress_errors_and_log
 
 
+def backoff_hdlr(details):
+    sleep(3)
+    logger.warning(
+        "Backing off {wait:0.1f} seconds after {tries} tries "
+        "calling function {target} with args {args} and kwargs "
+        "{kwargs}".format(**details)
+    )
+
+
+@backoff.on_exception(
+    backoff.expo,
+    Exception,
+    max_tries=3,
+    logger=logger,
+    on_backoff=backoff_hdlr,
+)
 async def get_estates_from_page(
     action: ACTION_TYPES,
     type: REAL_ESTATE_TYPES,
@@ -421,15 +437,6 @@ async def _scroll_and_get_divs(page):
     await _scroll_position(page)
     soup = await _fetch_page_content(page)
     return soup.find_all("div", attrs={"data-position": True})
-
-
-def backoff_hdlr(details):
-    sleep(3)
-    logger.warning(
-        "Backing off {wait:0.1f} seconds after {tries} tries "
-        "calling function {target} with args {args} and kwargs "
-        "{kwargs}".format(**details)
-    )
 
 
 @backoff.on_exception(
